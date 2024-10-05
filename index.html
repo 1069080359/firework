@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>烟花</title>
+</head>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .canvasBox {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+  }
+
+  canvas {
+    border: 1px solid;
+    background-color: #000;
+  }
+</style>
+
+<body>
+  <div class="canvasBox">
+    <canvas id="canvas"></canvas>
+  </div>
+</body>
+
+</html>
+<script src="./index.js"></script>
+<script>
+  const canvas = document.getElementById('canvas')
+  const canvasWidth = document.documentElement.clientWidth || document.body.clientWidth
+  const canvasHeight = document.documentElement.clientHeight || document.body.clientHeight
+  const ratio = Math.max(window.devicePixelRatio, 2)
+  canvas.width = canvasWidth * ratio
+  canvas.height = canvasHeight * ratio
+  canvas.style.width = canvasWidth + 'px'
+  canvas.style.height = canvasHeight + 'px'
+
+  const ctx = canvas.getContext('2d')
+  ctx.scale(ratio, ratio)
+
+  const getRandom = (min, max) => {
+    return Math.random() * (max - min) + min
+  }
+
+  const drawCircle = ({ opacity = 1, x, y, radius, color }) => {
+    ctx.save()
+    ctx.globalAlpha = opacity
+    ctx.beginPath()
+    ctx.arc(x, y, radius, 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.fill()
+    ctx.restore()
+  }
+  const deleteFromList = (list, target) => {
+    const index = list.findIndex(item => {
+      return item === target
+    })
+    list.splice(index, 1)
+  }
+  // 动画循环
+  // 烟花列表
+  const fireworkList = []
+  const draw = () => {
+    // 使用半透明清空画布，形成拖尾效果
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+
+    ctx.save()
+
+    // 修改坐标系
+    ctx.translate(0, canvasHeight)
+    ctx.scale(1, -1)
+
+    const list = [...fireworkList]
+    list.forEach(firework => {
+      firework.update()
+      if (firework.isEnd()) {
+        deleteFromList(fireworkList, firework)
+      }
+    })
+
+    ctx.restore()
+
+    requestAnimationFrame(draw)
+  }
+  draw()
+
+  // 烟花颜色列表
+  const createFireworkColor = () => {
+    const colorList = [
+      '#ff0043',
+      '#14fc56',
+      '#1e7fff',
+      '#e60aff',
+      '#ffbf36',
+      '#ffffff'
+    ]
+    return colorList[Math.floor(Math.random() * colorList.length)]
+  }
+
+  // 发射烟花
+  canvas.addEventListener('click', () => {
+    const firework = new Firework({
+      color: createFireworkColor()
+    })
+    fireworkList.push(firework)
+    firework.launch()
+  })
+
+</script>
